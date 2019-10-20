@@ -34,6 +34,7 @@
             Boundries()
             drawBullet();
             moveBullet();
+            BPCollision()
         }
         var playerXpos = 40;
         var playerYpos = 350;
@@ -95,6 +96,16 @@
             if (rightKeyPressed == true && playerXpos < ropePos[0] - playerSize + 3){
                 playerXpos += playerXspeed;
             }
+            
+        }
+        
+        function BPCollision(){
+            bullets.forEach(function(bullet,i){
+                
+                
+                
+                
+            });
             
         }
         
@@ -166,6 +177,7 @@
         function makeBullets(){
             var bulletPos = Math.floor(Math.random()*3) + 1;
             
+            var POSorNEG = Math.floor(Math.random()*2)+1;
             const BULLET_SIZE = 15;
             var bulletXpos = 600;
             var bulletYpos = 0;
@@ -185,13 +197,14 @@
                 BULLET_SIZE: BULLET_SIZE,
                 bulletYpos: bulletYpos,
                 bulletXspeed: bulletXspeed,
-                bulletYspeed: bulletYspeed
+                bulletYspeed: bulletYspeed,
+                POSorNEG: POSorNEG
             }
             
             bullets.push(bullet);
         }
         
-        for(i = 0; i < 5; i++){
+        for(i = 0; i < 5; i++){// controlls the amount of shots
             makeBullets();
         }
         
@@ -204,20 +217,19 @@
         
         function moveBullet(){
             bullets.forEach(function(bullet,i){
+                if (bullet.bulletXpos < playerXpos + playerSize && bullet.bulletXpos > playerXpos && bullet.bulletYpos < playerYpos + playerSize && bullet.bulletYpos > playerYpos){
+                    console.log('h')
+                playerXpos = 0;
+                }
                 
                 if(bullet.bulletXpos <= 0 - bullet.BULLET_SIZE){
                    bullet.bulletXpos = BloonXpos;
-                    console.log(bullet.bulletXpos)
-                    
-                    var POSorNEG = Math.floor(Math.random()*2)+1;
-                    if(POSorNEG == 1){
-                        bullet.bulletYspeed *= -1;
-                    }
                     var bulletXspeed2 = Math.floor(Math.random()*(15 - 5) + 5);
                     var bulletYspeed2 = Math.floor(Math.random()*(15 - 5) + 5);
                     bullet.bulletXspeed = bulletXspeed2;
                     bullet.bulletYspeed = bulletYspeed2;
                     
+                    var bulletPos = Math.floor(Math.random()*3) + 1;
                     var bulletPos = Math.floor(Math.random()*3) + 1;
                      if(bulletPos == 1){
                        bullet.bulletYpos = BloonYpos[0];
@@ -225,6 +237,17 @@
                         bullet.bulletYpos = BloonYpos[1];     
                     } else {
                         bullet.bulletYpos = BloonYpos[2]; 
+                    }
+                    
+                    
+                    
+                    
+                    var POSorNEG = Math.floor(Math.random()*2)+1;
+                    if(POSorNEG == 1){
+                        bullet.bulletYspeed *= 1;
+                    }else {
+                        bullet.bulletYspeed *= -1;
+                        
                     }
                 } 
                 if(bullet.bulletYpos < 0){
