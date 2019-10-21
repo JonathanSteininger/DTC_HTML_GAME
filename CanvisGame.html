@@ -11,18 +11,37 @@
             canvas = document.getElementById('gameCanvas');
             canvasContext = canvas.getContext('2d');
             
-            var dificulty = '';
-            while (dificulty)
-            prompt
+            
+            
             
             
             
             document.addEventListener('keydown', keyPressed);
             document.addEventListener('keyup', keyReleased);
             
+            var playerName = "";
+            while (playerName == "null" || playerName == ""){
+                
+            playerName = prompt("What is your name?", "Player");   
+            }
+            
+            
+            
+            var difficulty = "";
+            while (difficulty != 'easy' && difficulty != 'medium' && difficulty != 'hard'){
+                
+            difficulty = prompt( playerName + ", what difficulty do you want? (Easy, Medium, Hard)", "easy").toLowerCase();
+                console.log(difficulty);
+            
+            if (difficulty === ""){
+                difficulty = "easy";
+            } else if (difficulty){
+            } else {
+                difficulty = "easy"
+            }
 //            document.addEventListener('keydown', keyPressed);
 //            document.addEventListener('keyup', keyReleased);
-            
+            }
             setInterval(mainloop, 1000/50);
         }
         var gameStop = false;
@@ -50,7 +69,7 @@
         }
         
         
-        var playerXpos = 40;
+        var playerXpos = 35;
         var playerYpos = 350;
         var playerSize = 50;
         var playerYspeed = 10;
@@ -143,9 +162,10 @@
         // invincability action
         function BPCollision(){
             bullets.forEach(function(bullet,i){
-                if (bullet.bulletXpos < playerXpos + playerSize && bullet.bulletXpos > playerXpos && bullet.bulletYpos < playerYpos + playerSize && bullet.bulletYpos > playerYpos && Invincability <= 0){
+                if (bullet.bulletXpos < playerXpos + playerSize && bullet.bulletXpos + bullet.BULLET_SIZE > playerXpos && bullet.bulletYpos < playerYpos + playerSize && bullet.bulletYpos + bullet.BULLET_SIZE > playerYpos && Invincability <= 0){
                     Invincability = 150;
                     playerColor = 'red';
+                    
                 }
                 
             });
