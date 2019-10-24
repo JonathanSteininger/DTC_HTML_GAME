@@ -19,31 +19,32 @@
             document.addEventListener('keydown', keyPressed);
             document.addEventListener('keyup', keyReleased);
             
-            var playerName = "";
-            while (playerName == "null" || playerName == ""){
-                
-            playerName = prompt("What is your name?", "Player");   
-            }
-            
-            
-            
-            var difficulty = "";
-            while (difficulty != 'easy' && difficulty != 'medium' && difficulty != 'hard'){
-                
-            difficulty = prompt( playerName + ", what difficulty do you want? (Easy, Medium, Hard)", "easy").toLowerCase();
-                console.log(difficulty);
-            
-            if (difficulty === ""){
-                difficulty = "easy";
-            } else if (difficulty){
-            } else {
-                difficulty = "easy"
-            }
-//            document.addEventListener('keydown', keyPressed);
-//            document.addEventListener('keyup', keyReleased);
-            }
             setInterval(mainloop, 1000/50);
         }
+            var playerName = '';
+            while (playerName == null || playerName == ""){
+                    
+                
+            playerName = prompt("What is your name?", "Player");   
+            console.log(playerName)
+            }
+            
+            while (difficulty != 'easy' && difficulty != 'medium' && difficulty != 'hard' && difficulty != 'impossible'){
+            var difficulty = '';
+                
+            difficulty = prompt( playerName + ", what difficulty do you want? (Easy, Medium, Hard)", "easy");
+                
+            
+                if (difficulty === ""){
+                    difficulty = "easy";
+                } else if (difficulty === null){
+                    difficulty = "hard";
+                } else if (difficulty == difficulty){
+                    difficulty = difficulty.toLowerCase();
+                }
+             
+            }
+        
         var gameStop = false;
         
         function mainloop(){
@@ -51,6 +52,7 @@
             if(onetimer == true){
                 playerXpos = playerStartPos[0];
                 playerYpos = (playerStartPos[1] - playerSize / 2);
+                GAMEMODE()
                 onetimer = false;
             }
             colorRect(0,0,canvas.width,canvas.height,'#D2FEFF');
@@ -64,7 +66,10 @@
             moveBullet();
             BPCollision();
             invincabilityTimer();
-    
+            addScore();
+            
+            draw("Lives: "+ LIVES,10,20,"20px arial" , "black")
+            draw("Score: "+ score,canvas.width - 120,20,"20px arial" , "black")
             }
         }
         
@@ -93,7 +98,6 @@
         var LEFT_ARROW_KEY = 37;
         var RIGHT_ARROW_KEY = 39;
         
-        var UP
         
         var upKeyPressed = false;
         var downKeyPressed = false;
@@ -101,6 +105,10 @@
         var rightKeyPressed = false;
         
         var Invincability = 0;
+        var LIVES = 1;
+        var score = 0;
+        var scoreIntervals = 4;
+        var maxBullets = 2;
         
         var img = new Image();   // Create new img element
         var singleLoadImg = true;
@@ -112,6 +120,40 @@
         imgRope.src = "img/rope2.png"
         var ropeSize = [20,652];//(width,length)
         var ropePos = [200,0];//(x,y)
+        
+        function  GAMEMODE(){
+            if (difficulty == 'hard'){
+                LIVES = 2;
+                maxBullets = 5;
+            } 
+            if (difficulty == 'medium'){
+                LIVES = 4;
+                maxBullets = 3;
+            } 
+            if (difficulty == 'easy'){
+                LIVES = 6;
+                maxBullets = 2;
+            }
+            
+            
+        }
+        
+        function addScore(){
+            // have to add timer
+            if (scoreIntervals !=8){
+                scoreIntervals -= 1;
+                }
+            if (scoreIntervals <= 0){
+                scoreIntervals = 4;
+            }
+            if (score != -10 && Invincability <=0 && scoreIntervals == 4){
+                score += 4;  
+            } else {
+                score += 1;
+            }
+        
+        }
+        
         
         //invincability timer
         function invincabilityTimer(){
@@ -157,6 +199,9 @@
             if (rightKeyPressed == true && playerXpos < ropePos[0] - playerSize + 3){
                 playerXpos += playerXspeed;
             }
+            if (LIVES <= 0){
+                gameStop = true
+            }
             
         }
         // invincability action
@@ -165,6 +210,7 @@
                 if (bullet.bulletXpos < playerXpos + playerSize && bullet.bulletXpos + bullet.BULLET_SIZE > playerXpos && bullet.bulletYpos < playerYpos + playerSize && bullet.bulletYpos + bullet.BULLET_SIZE > playerYpos && Invincability <= 0){
                     Invincability = 150;
                     playerColor = 'red';
+                    LIVES -= 1;
                     
                 }
                 
@@ -235,11 +281,20 @@
             canvasContext.fillRect(x,y,w,h)
         }
         
+        function draw(msg,x,y,f,c){
+            
+            canvasContext.font = f;
+            canvasContext.fillStyle = c;
+            canvasContext.fillText(msg, x, y)// ('text' var, xpos, ypos)
+            
+        }
+        
         var bullets = [];
         
-        function makeBullets(){
+       function makeBullets(){
+            var scoreY = 0;
+            var scoreX = 0;
             var bulletPos = Math.floor(Math.random()*3) + 1;
-            
             var POSorNEG = Math.floor(Math.random()*2)+1;
             const BULLET_SIZE = 15;
             var bulletXpos = 600;
@@ -259,15 +314,17 @@
                 bulletXpos: bulletXpos,
                 BULLET_SIZE: BULLET_SIZE,
                 bulletYpos: bulletYpos,
-                bulletXspeed: bulletXspeed,
                 bulletYspeed: bulletYspeed,
-                POSorNEG: POSorNEG
+                bulletXspeed: bulletXspeed,
+                POSorNEG: POSorNEG,
+                scoreY:scoreY,
+                scoreX:scoreX
             }
             
             bullets.push(bullet);
         }
         
-        for(i = 0; i < 5; i++){// controlls the amount of shots
+        for(i = 0; i < maxBullets; i++){// controlls the amount of shots
             makeBullets();
         }
         
@@ -288,6 +345,7 @@
                     bullet.bulletXspeed = bulletXspeed2;
                     bullet.bulletYspeed = bulletYspeed2;
                     
+                    
                     var bulletPos = Math.floor(Math.random()*3) + 1;
                     var bulletPos = Math.floor(Math.random()*3) + 1;
                      if(bulletPos == 1){
@@ -304,24 +362,49 @@
                     var POSorNEG = Math.floor(Math.random()*2)+1;
                     if(POSorNEG == 1){
                         bullet.bulletYspeed *= 1;
+                        bullet.scoreY *= 1
                     }else {
                         bullet.bulletYspeed *= -1;
+                        bullet.scoreY *= -1
                         
                     }
                 } 
-                if(bullet.bulletYpos < 0){
+                
+                bullet.scoreX += (1*maxBullets)/1.4;
+                
+                if(bullet.bulletYpos < 0 && bullet.bulletYspeed < 0){
                     bullet.bulletYspeed *= -1;
+                    bullet.scoreY *= -1;
                 }
-                if(bullet.bulletYpos > canvas.height - bullet.BULLET_SIZE){
+                if(bullet.bulletYpos > canvas.height - bullet.BULLET_SIZE && bullet.bulletYspeed > 0){
                     bullet.bulletYspeed *= -1;
+                    bullet.scoreY *= -1;
                 }
                 if(bullet.bulletXpos > 0 - bullet.BULLET_SIZE && Invincability > 0){
-                    bullet.bulletXpos -= bullet.bulletXspeed/4;
-                    bullet.bulletYpos += bullet.bulletYspeed/4; 
+                    bullet.bulletXpos -= (bullet.bulletXspeed  + bullet.scoreX / 500)/4;
+                    bullet.bulletYpos += (bullet.bulletYspeed + bullet.scoreY/500)/4; 
+                    if (bullet.scoreX > -2000 && bullet.scoreX < 2000){
+                        if (bullet.scoreY >= 0){
+                            bullet.scoreY += (1*maxBullets)/1.4;
+                        
+                        }else {
+                            bullet.scoreY -= (1*maxBullets)/1.4;
+                        }
+                    }
+                    
                 } else {
-                    bullet.bulletXpos -= bullet.bulletXspeed;
-                    bullet.bulletYpos += bullet.bulletYspeed;
+                    bullet.bulletXpos -= bullet.bulletXspeed + bullet.scoreX / 500;
+                    bullet.bulletYpos += bullet.bulletYspeed + bullet.scoreY/500;
+                    if (bullet.scoreX > -2000 && bullet.scoreX < 2000){
+                        if (bullet.scoreY >= 0){
+                            bullet.scoreY += (1*maxBullets)/1.4 ;
+                        
+                        }else {
+                            bullet.scoreY -= (1*maxBullets)/1.4;
+                        }
+                    }
                 }
+                console.log(bullet.scoreX,bullet.scoreY);
             });
         }
         
