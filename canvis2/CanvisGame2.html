@@ -1,0 +1,461 @@
+<!doctype html>
+<title>BloonsReverse</title>
+<head></head>
+<body>
+    <canvas id="gameCanvas" width="700" height="550">
+    
+    <script>
+        var canvas, canvasContext;
+        
+        window.onload = function(){
+            canvas = document.getElementById('gameCanvas');
+            canvasContext = canvas.getContext('2d');
+            
+            
+            
+            
+            
+            
+            document.addEventListener('keydown', keyPressed);
+            document.addEventListener('keyup', keyReleased);
+            
+            setInterval(mainloop, 1000/50);
+        }
+            var playerName = '';
+            while (playerName == null || playerName == ""){
+                    
+                
+            playerName = prompt("What is your name?", "Player");   
+            console.log(playerName)
+            }
+            
+            while (difficulty != 'easy' && difficulty != 'medium' && difficulty != 'hard' && difficulty != 'impossible'){
+            var difficulty = '';
+                
+            difficulty = prompt( playerName + ", what difficulty do you want? (Easy, Medium, Hard)", "easy");
+                
+            
+                if (difficulty === ""){
+                    difficulty = "easy";
+                } else if (difficulty === null){
+                    difficulty = "hard";
+                } else if (difficulty == difficulty){
+                    difficulty = difficulty.toLowerCase();
+                }
+             
+            }
+        
+        var gameStop = false;
+        var gamePause = false;
+        function mainloop(){
+            pauseGame()
+            if (gamePause == false){
+                if (gameStop == false){
+                    if(onetimer == true){
+                        gameStartSet()
+                        playerXpos = playerStartPos[0];
+                        playerYpos = (playerStartPos[1] - playerSize / 2);
+                        GAMEMODE()
+                        for(i = 0; i < maxBullets; i++){// controlls the amount of shots
+                            makeBullets();
+                        }
+                        onetimer = false;
+                    }
+                    colorRect(0,0,canvas.width,canvas.height,'#D2FEFF');
+                    imgLoad(img2,0,0,canvas.width,canvas.height);//the background 
+                    colorRect(playerXpos,playerYpos,playerSize,playerSize,playerColor);//player draw (the color is neon green)
+                    imgLoad(imgRope,ropePos[0],ropePos[1],ropeSize[0],ropeSize[1]);//the image for the rope
+                    bloons();
+                    move();
+                    Boundries()
+                    drawBullet();
+                    moveBullet();
+                    BPCollision();
+                    invincabilityTimer();
+                    addScore();
+            
+                    draw("Lives: "+ LIVES,10,20,"20px arial" , "black")
+                    draw("Score: "+ score,canvas.width - 120,20,"20px arial" , "black")
+                }else {
+                    draw(playerName + ", Your score was: " + score, canvas.width / 4, canvas.height/2 ,"30px arial", "black");
+                }
+        
+            }
+        }
+        
+        var playerXpos = 35;
+        var playerYpos = 350;
+        var playerSize = 50;
+        var playerYspeed = 10;
+        var playerXspeed = 10;
+        var playerColor = '#39ff14';
+        
+        var playerStartPos = [40,250];//(x,y)
+        var onetimer = true;
+        
+        var BloonXpos = 600;
+        var BloonYpos = [100,250,400];
+        var BloonSize = 50;
+    
+        var UP_KEY = 87;
+        var DOWN_KEY = 83;
+        var LEFT_KEY = 65;
+        var RIGHT_KEY = 68;
+        
+        var UP_ARROW_KEY = 38;
+        var DOWN_ARROW_KEY = 40;
+        var LEFT_ARROW_KEY = 37;
+        var RIGHT_ARROW_KEY = 39;
+        
+        var PAUSE_KEY = 80;
+        
+        var upKeyPressed = false;
+        var downKeyPressed = false;
+        var leftKeyPressed = false;
+        var rightKeyPressed = false;
+        var pauseKeyPressed = false;
+        
+        var singlePress = true;
+        var pauseChanger = 1;
+        
+        var Invincability = 0;
+        var LIVES = 1;
+        var score = 0;
+        var scoreIntervals = 4;
+        var maxBullets = 0;
+        
+        var img = new Image();   // Create new img element
+        var singleLoadImg = true;
+        
+        var img2 = new Image();   // Create new img element
+        img2.src = "img/blue.jpg"
+        
+        var imgRope = new Image();
+        imgRope.src = "img/rope2.png"
+        var ropeSize = [20,0];//(width,length)
+        var ropePos = [200,0];//(x,y)
+        
+        function  GAMEMODE(){
+            if (difficulty == 'hard'){
+                LIVES = 2;
+                maxBullets = 4;
+            } 
+            if (difficulty == 'medium'){
+                LIVES = 4;
+                maxBullets = 3;
+            } 
+            if (difficulty == 'easy'){
+                LIVES = 6;
+                maxBullets = 2;
+            }
+            
+            
+        }
+        function pauseGame(){
+            
+            if (pauseKeyPressed == true && singlePress == true){
+                singlePress = false;
+                pauseChanger += 1;
+
+            }
+            if ( pauseChanger == 1){
+                gamePause = false;
+            }
+            if (pauseChanger == 2){
+                gamePause = true
+            }
+            if (pauseChanger >= 3){
+                pauseChanger = 1;
+            }
+        }
+        
+        function addScore(){
+            // have to add timer
+            if (scoreIntervals !=8){
+                scoreIntervals -= 1;
+                }
+            if (scoreIntervals <= 0){
+                scoreIntervals = 4;
+            }
+            if (score != -10 && Invincability <=0 && scoreIntervals == 4){
+                score += 4*maxBullets;  
+            } else {
+                score += 1*maxBullets;
+            }
+        
+        }
+        function gameStartSet(){
+            BloonYpos[0] = ((canvas.height / 3) - (BloonSize / 2))- canvas.height/ 8;
+            BloonYpos[1] = (((canvas.height / 3) - (BloonSize / 2))*2) - canvas.height/ 8;
+            BloonYpos[2] = (((canvas.height / 3) - (BloonSize / 2))*3) - canvas.height/ 8;
+            BloonXpos = canvas.width - (canvas.width/10);
+            
+            ropePos[0] = canvas.width /3.5;
+            ropeSize[1] = canvas.height;
+            
+        }
+        
+        
+        //invincability timer
+        function invincabilityTimer(){
+            if (Invincability >= 0){
+                Invincability -= 1;
+            }
+            if (Invincability <=0){
+                playerColor = '#39ff14';
+            }
+            if (Invincability < 51 && Invincability > 40){
+                playerColor = 'blue';
+            } else if(Invincability < 41 && Invincability > 30){
+                playerColor = 'red'
+            }
+            if (Invincability < 31 && Invincability > 20){
+                playerColor = 'blue';
+            }  else if (Invincability < 21 && Invincability > 10){
+                playerColor = 'red';
+            }
+            else if (Invincability < 11 && Invincability > 0){
+                playerColor = 'blue';
+            }
+        }
+        
+        function bloons(){
+            colorRect(BloonXpos,BloonYpos[0],BloonSize,BloonSize,'black');
+            colorRect(BloonXpos,BloonYpos[1],BloonSize,BloonSize,'black');
+            colorRect(BloonXpos,BloonYpos[2],BloonSize,BloonSize,'black');
+        }
+        
+        function move(){
+            if (upKeyPressed == true && playerYpos > 0){
+                playerYpos -= playerYspeed;
+            }
+            
+            if (downKeyPressed == true && playerYpos < canvas.height - playerSize){
+                playerYpos += playerYspeed;
+            }
+            if (leftKeyPressed == true && playerXpos > 0){
+                playerXpos -= playerXspeed;
+            }
+            
+            if (rightKeyPressed == true && playerXpos < ropePos[0] - playerSize + 3){
+                playerXpos += playerXspeed;
+            }
+            if (LIVES <= 0){
+                gameStop = true;
+            }
+            
+        }
+        // invincability action
+        function BPCollision(){
+            bullets.forEach(function(bullet,i){
+                if (bullet.bulletXpos < playerXpos + playerSize && bullet.bulletXpos + bullet.BULLET_SIZE > playerXpos && bullet.bulletYpos < playerYpos + playerSize && bullet.bulletYpos + bullet.BULLET_SIZE > playerYpos && Invincability <= 0){
+                    Invincability = 150;
+                    playerColor = 'red';
+                    LIVES -= 1;
+                    
+                }
+                
+            });
+            
+        }
+        
+        function Boundries(){
+            if (playerXpos + playerSize > ropePos[0] +5){
+                playerXpos = ropePos[0] +5 - playerSize;
+            }
+            if(playerXpos < 0 ){
+                playerXpos = 0;
+            }
+            if(playerYpos < 0){
+               playerYpos = 0;
+            }
+            if(playerYpos > canvas.height - playerSize){
+                playerYpos = canvas.height - playerSize;
+            }
+        }
+        
+        function keyPressed(evt){
+            if(evt.keyCode == PAUSE_KEY){
+                pauseKeyPressed = true;
+            }
+            
+            if(evt.keyCode == UP_KEY || evt.keyCode == UP_ARROW_KEY){
+                upKeyPressed = true;
+            }
+            if(evt.keyCode == DOWN_KEY || evt.keyCode == DOWN_ARROW_KEY){
+                downKeyPressed = true;
+            }
+            if(evt.keyCode == LEFT_KEY || evt.keyCode == LEFT_ARROW_KEY){
+                leftKeyPressed = true;
+            }
+            if(evt.keyCode == RIGHT_KEY || evt.keyCode == RIGHT_ARROW_KEY){
+                rightKeyPressed = true;
+            }
+        }
+        
+        function keyReleased(evt){
+            if(evt.keyCode == PAUSE_KEY){
+                pauseKeyPressed = false;
+                singlePress = true;
+            }
+            
+            if(evt.keyCode == UP_KEY || evt.keyCode == UP_ARROW_KEY){
+                upKeyPressed = false;
+            }
+            if(evt.keyCode == DOWN_KEY || evt.keyCode == DOWN_ARROW_KEY){
+                downKeyPressed = false;
+            } 
+            if(evt.keyCode == LEFT_KEY || evt.keyCode == LEFT_ARROW_KEY){
+                leftKeyPressed = false;
+            }
+            if(evt.keyCode == RIGHT_KEY || evt.keyCode == RIGHT_ARROW_KEY){
+                rightKeyPressed = false;
+            }
+            
+        }
+        
+        function newIMG(){
+            if(singleLoadImg == true){
+                new Image();
+                singleLoadImg = false;
+            }
+        }
+
+        function imgLoad(src,x,y,w,h){
+            canvasContext.drawImage(src,x,y,w,h);
+        }
+        
+        function colorRect(x,y,w,h,c){
+            canvasContext.fillStyle = c;
+            canvasContext.fillRect(x,y,w,h)
+        }
+        
+        function draw(msg,x,y,f,c){
+            
+            canvasContext.font = f;
+            canvasContext.fillStyle = c;
+            canvasContext.fillText(msg, x, y)// ('text' var, xpos, ypos)
+            
+        }
+        
+        var bullets = [];
+        
+       function makeBullets(){
+            var scoreY = 0;
+            var scoreX = 0;
+            var bulletPos = Math.floor(Math.random()*3) + 1;
+            var POSorNEG = Math.floor(Math.random()*2)+1;
+            const BULLET_SIZE = 15;
+            var bulletXpos = BloonXpos;
+            var bulletYpos = 0;
+            if(bulletPos == 1){
+               bulletYpos = BloonYpos[0];
+            } else if (bulletPos == 2){
+                bulletYpos = BloonYpos[1];     
+            } else {
+                bulletYpos = BloonYpos[2]; 
+            }
+            
+            var bulletXspeed = Math.floor(Math.random()*(15 - 5) + 5);
+            var bulletYspeed = Math.floor(Math.random()*(15 - 5) + 5);
+            
+            var bullet = {
+                bulletXpos: bulletXpos,
+                BULLET_SIZE: BULLET_SIZE,
+                bulletYpos: bulletYpos,
+                bulletYspeed: bulletYspeed,
+                bulletXspeed: bulletXspeed,
+                POSorNEG: POSorNEG,
+                scoreY:scoreY,
+                scoreX:scoreX
+            }
+            
+            bullets.push(bullet);
+        }
+        
+        
+        
+        function drawBullet(){
+            bullets.forEach(function(bullet,i){
+                colorRect(bullet.bulletXpos,bullet.bulletYpos,bullet.BULLET_SIZE,bullet.BULLET_SIZE,'orange');
+                
+            });
+        }
+        
+        function moveBullet(){
+            bullets.forEach(function(bullet,i){
+                
+                if(bullet.bulletXpos <= 0 - bullet.BULLET_SIZE){
+                   bullet.bulletXpos = BloonXpos;
+                    var bulletXspeed2 = Math.floor(Math.random()*(15 - 5) + 5);
+                    var bulletYspeed2 = Math.floor(Math.random()*(15 - 5) + 5);
+                    bullet.bulletXspeed = bulletXspeed2;
+                    bullet.bulletYspeed = bulletYspeed2;
+                    
+                    
+                    var bulletPos = Math.floor(Math.random()*3) + 1;
+                    var bulletPos = Math.floor(Math.random()*3) + 1;
+                     if(bulletPos == 1){
+                       bullet.bulletYpos = BloonYpos[0];
+                    } else if (bulletPos == 2){
+                        bullet.bulletYpos = BloonYpos[1];     
+                    } else {
+                        bullet.bulletYpos = BloonYpos[2]; 
+                    }
+                    
+                    
+                    
+                    
+                    var POSorNEG = Math.floor(Math.random()*2)+1;
+                    if(POSorNEG == 1){
+                        bullet.bulletYspeed *= 1;
+                        bullet.scoreY *= 1
+                    }else {
+                        bullet.bulletYspeed *= -1;
+                        bullet.scoreY *= -1
+                        
+                    }
+                } 
+                
+                bullet.scoreX += (1*maxBullets)/1.4;
+                
+                if(bullet.bulletYpos < 0 && bullet.bulletYspeed < 0){
+                    bullet.bulletYspeed *= -1;
+                    bullet.scoreY *= -1;
+                }
+                if(bullet.bulletYpos > canvas.height - bullet.BULLET_SIZE && bullet.bulletYspeed > 0){
+                    bullet.bulletYspeed *= -1;
+                    bullet.scoreY *= -1;
+                }
+                if(bullet.bulletXpos > 0 - bullet.BULLET_SIZE && Invincability > 0){
+                    bullet.bulletXpos -= (bullet.bulletXspeed  + bullet.scoreX / 500)/4;
+                    bullet.bulletYpos += (bullet.bulletYspeed + bullet.scoreY/500)/4; 
+                    if (bullet.scoreX > -2000 && bullet.scoreX < 2000){
+                        if (bullet.scoreY >= 0){
+                            bullet.scoreY += (1*maxBullets)/1.4;
+                        
+                        }else {
+                            bullet.scoreY -= (1*maxBullets)/1.4;
+                        }
+                    }
+                    
+                } else {
+                    bullet.bulletXpos -= bullet.bulletXspeed + bullet.scoreX / 500;
+                    bullet.bulletYpos += bullet.bulletYspeed + bullet.scoreY/500;
+                    if (bullet.scoreX > -2000 && bullet.scoreX < 2000){
+                        if (bullet.scoreY >= 0){
+                            bullet.scoreY += (1*maxBullets)/1.4 ;
+                        
+                        }else {
+                            bullet.scoreY -= (1*maxBullets)/1.4;
+                        }
+                    }
+                }
+            });
+        }
+        
+    </script>
+    </canvas>
+    
+</body>
+<!--use github for work plan-->
